@@ -1,5 +1,6 @@
 # transcriptomePRC
 Quickly search a large database of sequences for regions that may associate with Polycomb Repressive Complexes. Program scores transcripts and saves locations of significant regions.<br/>
+
 Ex. python -t fasta.fa -k 4 -n 6 -w 850 -s 85
 <br/>
 
@@ -15,4 +16,3 @@ Requires:
 3. Pre-calculated distribution of pearon's correlations between query and reference to calculate rank <br/>
 
  <br/>
-Ex. python -t fasta.fa -k 4 -n 6 -w 850 -s 85
