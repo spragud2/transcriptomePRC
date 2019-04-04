@@ -6,6 +6,7 @@ Ex. python qSEEKRscanr.py -t fasta.fa -k 4 -n 6 -w 850 -s 85
 
 -t path to fasta set of sequences <br/>
 -k value of k for kmer counting (default = 5) <br/>
+--thresh percentile threshold to count a sequence regions as a 'hit' to a query (default = 95) <br/>
 -n number of CPU cores desired (default = multiprocessing.cpu_count() - 1 ) <br/>
 -w windowing size to tile sequences (default = 1000) <br/>
 -s how many bp to slide windows (default = 100) <br/>
