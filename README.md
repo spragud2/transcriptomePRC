@@ -15,6 +15,8 @@ Ex. python qSEEKRscanr.py -t fasta.fa -k 4 -n 6 -w 850 -s 85
 -w windowing size to tile sequences (default = 1000) <br/>
 -s how many bp to slide windows (default = 100) <br/>
  <br/>
+ 
+### Other requirements (see folders in repo as example)
 Requires:
 1. Set of query sequences that have some known function or property <br/>
 2. Pre-calculated mean and std for k-mers in reference set <br/>
