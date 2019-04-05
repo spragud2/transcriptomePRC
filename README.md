@@ -1,9 +1,13 @@
 # transcriptomePRC
 Quickly search a large database of sequences for regions that may associate with Polycomb Repressive Complexes. Program scores transcripts and saves locations of significant regions.<br/>
 
+This script is optimized for parallelization and for very large searches <br/>
+
+## Usage example
 Ex. python qSEEKRscanr.py -t fasta.fa -k 4 -n 6 -w 850 -s 85
 <br/>
 
+## Parameter Definitions
 -t path to fasta set of sequences <br/>
 -k value of k for kmer counting (default = 5) <br/>
 --thresh percentile threshold to count a sequence regions as a 'hit' to a query (default = 95) <br/>
