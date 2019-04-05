@@ -12,41 +12,62 @@ import pickle
 import argparse
 import multiprocessing
 
-def qSEEKR(refs,k,Q,target,w,s):
-    t_h,t_s = target
-    window,slide = w,s
+# This version of the script parallelizes computation
+# And completely vectorizes the calculation of the correlation matrix
+
+
+def qSEEKR(refs, k, Q, target, w, s):
+    t_h, t_s = target
+    window, slide = w, s
     hits = {}
-    tiles = [t_s[i:i+window] for i in range(0,len(t_s),slide)]
-    threeprime_hang = len(t_s)%slide
+    tiles = [t_s[i:i+window] for i in range(0, len(t_s), slide)]
+    threeprime_hang = len(t_s) % slide
     if threeprime_hang != 0:
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
-    tile_counter = BasicCounter(k=args.k, mean=mean, std=std,silent=True)
+    tile_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
     tile_counter.seqs = tiles
     tile_counter.get_counts()
     tCounts = tile_counter.counts
 
-    hits_arr = np.corrcoef(Q,tCounts)
-    hits_arr = hits_arr[-tCounts.shape[0]:,:-tCounts.shape[0]]
-    hits_idx = np.argwhere(hits_arr > refs)
-    tot_scores = np.sum(hits_arr > refs) / len(t_s)
-    return t_h,[hits_idx,tot_scores]
+    #Completely vectorized implementation of the old 'dSEEKR'
+    #Convert row means in matrices to 0
+    Q = (Q.T - np.mean(Q, axis=1)).T
+    tCounts = (tCounts.T - np.mean(tCounts, axis=1)).T
+    #Matrix multiplication (vector dot products) of queries and tiles
+    cov = Q.dot(tCounts.T)
+    #Standard deviation of vectors is equal to the 2-norm of the vector
+    qNorm = np.linalg.norm(Q, axis=1)
+    tNorm = np.linalg.norm(tCounts, axis=1)
+    #Outer vector multiplication to match query to correct tile
+    norm = np.outer(qNorm, tNorm)
+    #Correlation matrix calculation
+    qSEEKRmat = cov/norm
+    qSEEKRmat = qSEEKRmat.T
+    hits_idx = np.argwhere(qSEEKRmat > refs)
+    tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
+    return t_h, [qSEEKRmat, hits_idx, tot_scores]
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t")
-parser.add_argument('-k',type=int)
-parser.add_argument('--thresh',type=int,help='Percentile to select hits',default=95)
-parser.add_argument('-n',type=int,help='Number of processors,default = number cpus avail',default=multiprocessing.cpu_count()-1)
-parser.add_argument('-w',type=int,help='Window for tile size',default=1000)
-parser.add_argument('-s',type=int,help='How many bp to slide tiles',default = 100)
+parser.add_argument('-k', type=int)
+parser.add_argument('--thresh', type=int,
+                    help='Percentile to select hits', default=95)
+parser.add_argument('-n', type=int, help='Number of processors,default = number cpus avail',
+                    default=multiprocessing.cpu_count()-1)
+parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
+parser.add_argument(
+    '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
 
 #Path to known functional domains
 query_path = './queries/queries.fa'
 target_path = args.t
-target_head,target_seq = Reader(target_path).get_headers(),Reader(target_path).get_seqs()
-queries = dict(zip(Reader(query_path).get_headers(), Reader(query_path).get_seqs()))
+target_head, target_seq = Reader(
+    target_path).get_headers(), Reader(target_path).get_seqs()
+queries = dict(zip(Reader(query_path).get_headers(),
+                   Reader(query_path).get_seqs()))
 
 
 mean_paths = [f for f in glob.iglob('*mean.npy')]
@@ -59,7 +80,7 @@ stds = {}
 for std_path in std_paths:
     stds[basename(std_path)] = np.load(std_path)
 
-target_dict = dict(zip(target_head,target_seq))
+target_dict = dict(zip(target_head, target_seq))
 refs = {}
 ref_paths = [f for f in glob.iglob(f'./refs/*{args.k}_ref.npy')]
 for ref_path in ref_paths:
@@ -67,35 +88,36 @@ for ref_path in ref_paths:
     refs[basename(ref_path)] = curr_npy
 
 refs_keys = [f'>{i[:-10]}' for i in refs.keys()]
-refs_new ={}
-for i,k in enumerate(refs):
+refs_new = {}
+for i, k in enumerate(refs):
     refs_new[refs_keys[i]] = refs[k]
 
 mean = means[f'{args.k}mean.npy']
 std = stds[f'{args.k}std.npy']
 
-query_counter = BasicCounter(k=args.k, mean=mean, std=std,silent=True)
+query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
 query_counter.seqs = list(queries.values())
 query_counter.get_counts()
 query_counts = query_counter.counts
 
-queries = dict(zip(queries.keys(),query_counts))
+queries = dict(zip(queries.keys(), query_counts))
 Q = np.array([list(i) for i in queries.values()])
 
-querymap = dict(zip(range(len(queries)),list(queries.keys())))
+querymap = dict(zip(range(len(queries)), list(queries.keys())))
 
 query_percentile = {}
 for i in range(len(queries)):
-    percentile = np.percentile(refs_new[querymap[i]],args.thresh)
+    percentile = np.percentile(refs_new[querymap[i]], args.thresh)
     query_percentile[querymap[i]] = percentile
 
 q_arr = np.array(list(query_percentile.values()))
 #This performs standard SEEKR for the query
 
 refs_arr = np.array([list(i) for i in refs.values()])
-percentiles = np.percentile(refs_arr,args.thresh,axis=1)
+percentiles = np.percentile(refs_arr, args.thresh, axis=1)
 with multiprocessing.Pool(args.n) as pool:
-    ha = pool.starmap(qSEEKR,product(*[[q_arr],[args.k],[Q],list(target_dict.items()),[args.w],[args.s]]))
+    ha = pool.starmap(qSEEKR, product(
+        *[[q_arr], [args.k], [Q], list(target_dict.items()), [args.w], [args.s]]))
     hits = dict(ha)
-pickle.dump(hits,open(f'{args.t[:-3]}_{args.k}_scores.p','wb'))
+pickle.dump(hits, open(f'{args.t[:-3]}_{args.k}_scores.p', 'wb'))
 #1/0
