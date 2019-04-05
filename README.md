@@ -4,7 +4,7 @@ Quickly search a large database of sequences for regions that may associate with
 This script is optimized for parallelization and for very large searches <br/>
 
 ## Usage example
-`Ex. python qSEEKRscanr.py -t fasta.fa -k 4 -n 6 -w 850 -s 85`
+Ex. ```python qSEEKRscanr.py -t fasta.fa -k 4 -n 6 -w 850 -s 85```
 <br/>
 
 ## Parameter Definitions
