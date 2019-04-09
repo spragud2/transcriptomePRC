@@ -50,10 +50,9 @@ def qSEEKR(refs, k, Q, target, w, s):
     hits_idx = np.argwhere(qSEEKRmat > refs)
     tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
     return t_h, [qSEEKRmat, hits_idx, tot_scores]
+###########################################################################
 
-'''
-ArgumentParser
-'''
+###########################################################################
 parser = argparse.ArgumentParser()
 parser.add_argument("-t")
 parser.add_argument('-k', type=int)
@@ -65,12 +64,9 @@ parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
 parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
-'''
+###########################################################################
 
-Load fasta files
-
-
-'''
+###########################################################################
 #Path to known functional domains
 query_path = './queries/queries.fa'
 target_path = args.t
@@ -78,8 +74,9 @@ target_head, target_seq = Reader(
     target_path).get_headers(), Reader(target_path).get_seqs()
 queries = dict(zip(Reader(query_path).get_headers(),
                    Reader(query_path).get_seqs()))
+###########################################################################
 
-
+###########################################################################
 mean_paths = [f for f in glob.iglob('*mean.npy')]
 means = {}
 for mean_path in mean_paths:
@@ -89,7 +86,11 @@ std_paths = [f for f in glob.iglob('*std.npy')]
 stds = {}
 for std_path in std_paths:
     stds[basename(std_path)] = np.load(std_path)
+mean = means[f'{args.k}mean.npy']
+std = stds[f'{args.k}std.npy']
+###########################################################################
 
+###########################################################################
 target_dict = dict(zip(target_head, target_seq))
 refs = {}
 ref_paths = [f for f in glob.iglob(f'./refs/*{args.k}_ref.npy')]
@@ -101,9 +102,9 @@ refs_keys = [f'>{i[:-10]}' for i in refs.keys()]
 refs_new = {}
 for i, k in enumerate(refs):
     refs_new[refs_keys[i]] = refs[k]
+###########################################################################
 
-mean = means[f'{args.k}mean.npy']
-std = stds[f'{args.k}std.npy']
+###########################################################################
 
 query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
 query_counter.seqs = list(queries.values())
@@ -125,6 +126,9 @@ q_arr = np.array(list(query_percentile.values()))
 
 refs_arr = np.array([list(i) for i in refs.values()])
 percentiles = np.percentile(refs_arr, args.thresh, axis=1)
+###########################################################################
+
+###########################################################################
 with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[q_arr], [args.k], [Q], list(target_dict.items()), [args.w], [args.s]]))
