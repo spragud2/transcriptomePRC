@@ -18,12 +18,12 @@ import multiprocessing
 def rectCorr(queries_kmers,ref_kmers):
     queries_kmers = (queries_kmers.T - np.mean(queries_kmers, axis=1)).T
     ref_kmers = (ref_kmers.T - np.mean(ref_kmers, axis=1)).T
-    #Matrix multiplication (vector dot products) of queries and tiles
+    #Transpose tile matrix and dot product queries against tiles
     cov = queries_kmers.dot(ref_kmers.T)
-    #Standard deviation of vectors is equal to the 2-norm of the vector
+    #Get the euclidean norm of each query and tile
     qNorm = np.linalg.norm(queries_kmers, axis=1)
     tNorm = np.linalg.norm(ref_kmers, axis=1)
-    #Outer vector multiplication to match query to correct tile
+    #Outer vector multiplication to match query to tiles
     norm = np.outer(qNorm, tNorm)
     #Correlation matrix calculation
     qSEEKRmat = cov/norm
@@ -127,7 +127,9 @@ q_arr = np.array(list(query_percentile.values()))
 refs_arr = np.array([list(i) for i in refs.values()])
 percentiles = np.percentile(refs_arr, args.thresh, axis=1)
 ###########################################################################
-
+'''
+Parallelize transcript computations 
+'''
 ###########################################################################
 with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
