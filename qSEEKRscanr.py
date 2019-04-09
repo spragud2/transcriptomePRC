@@ -11,9 +11,23 @@ from os.path import basename
 import pickle
 import argparse
 import multiprocessing
-
+'''
 # This version of the script parallelizes computation
 # And completely vectorizes the calculation of the correlation matrix
+'''
+def SEEKRrectCorr(queries_kmers,ref_kmers):
+    queries_kmers = (queries_kmers.T - np.mean(queries_kmers, axis=1)).T
+    ref_kmers = (ref_kmers.T - np.mean(ref_kmers, axis=1)).T
+    #Matrix multiplication (vector dot products) of queries and tiles
+    cov = queries_kmers.dot(ref_kmers.T)
+    #Standard deviation of vectors is equal to the 2-norm of the vector
+    qNorm = np.linalg.norm(queries_kmers, axis=1)
+    tNorm = np.linalg.norm(ref_kmers, axis=1)
+    #Outer vector multiplication to match query to correct tile
+    norm = np.outer(qNorm, tNorm)
+    #Correlation matrix calculation
+    qSEEKRmat = cov/norm
+    return qSEEKRmat.T
 
 
 def qSEEKR(refs, k, Q, target, w, s):
@@ -32,23 +46,14 @@ def qSEEKR(refs, k, Q, target, w, s):
 
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
-    Q = (Q.T - np.mean(Q, axis=1)).T
-    tCounts = (tCounts.T - np.mean(tCounts, axis=1)).T
-    #Matrix multiplication (vector dot products) of queries and tiles
-    cov = Q.dot(tCounts.T)
-    #Standard deviation of vectors is equal to the 2-norm of the vector
-    qNorm = np.linalg.norm(Q, axis=1)
-    tNorm = np.linalg.norm(tCounts, axis=1)
-    #Outer vector multiplication to match query to correct tile
-    norm = np.outer(qNorm, tNorm)
-    #Correlation matrix calculation
-    qSEEKRmat = cov/norm
-    qSEEKRmat = qSEEKRmat.T
+    qSEEKRmat = SEEKRrectCorr(Q,tCounts)
     hits_idx = np.argwhere(qSEEKRmat > refs)
     tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
     return t_h, [qSEEKRmat, hits_idx, tot_scores]
 
-
+'''
+ArgumentParser
+'''
 parser = argparse.ArgumentParser()
 parser.add_argument("-t")
 parser.add_argument('-k', type=int)
@@ -60,7 +65,12 @@ parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
 parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
+'''
 
+Load fasta files
+
+
+'''
 #Path to known functional domains
 query_path = './queries/queries.fa'
 target_path = args.t
