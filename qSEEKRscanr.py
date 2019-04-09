@@ -15,7 +15,7 @@ import multiprocessing
 # This version of the script parallelizes computation
 # And completely vectorizes the calculation of the correlation matrix
 '''
-def SEEKRrectCorr(queries_kmers,ref_kmers):
+def rectCorr(queries_kmers,ref_kmers):
     queries_kmers = (queries_kmers.T - np.mean(queries_kmers, axis=1)).T
     ref_kmers = (ref_kmers.T - np.mean(ref_kmers, axis=1)).T
     #Matrix multiplication (vector dot products) of queries and tiles
@@ -46,7 +46,7 @@ def qSEEKR(refs, k, Q, target, w, s):
 
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
-    qSEEKRmat = SEEKRrectCorr(Q,tCounts)
+    qSEEKRmat = rectCorr(Q,tCounts)
     hits_idx = np.argwhere(qSEEKRmat > refs)
     tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
     return t_h, [qSEEKRmat, hits_idx, tot_scores]
