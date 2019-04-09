@@ -53,7 +53,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t")
 parser.add_argument('-k', type=int)
 parser.add_argument('--thresh', type=int,
-                    help='Percentile to select hits', default=95)
+                    help='Percentile to select hits', default=99)
 parser.add_argument('-n', type=int, help='Number of processors,default = number cpus avail',
                     default=multiprocessing.cpu_count()-1)
 parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
