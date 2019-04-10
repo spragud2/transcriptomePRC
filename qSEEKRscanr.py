@@ -54,8 +54,6 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
     tCounts = count_kmers(tiles,k,k_map)
-    print(tCounts.shape)
-    1/0
     tCounts = (tCounts - mean)/std
     tCounts = np.log2(tCounts + np.abs(np.min(tCounts))+1)
     #Completely vectorized implementation of the old 'dSEEKR'
@@ -79,8 +77,7 @@ parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
 
-bases = ['A','T','C','G']
-kmers = [''.join(p) for p in product(bases,repeat=args.k)]
+kmers = [''.join(p) for p in product('AGTC',repeat=args.k)]
 kmer_map = dict(zip(kmers,range(0,4**args.k)))
 ###########################################################################
 
@@ -121,6 +118,8 @@ queryseqs = list(queries.values())
 query_counts = count_kmers(queryseqs,args.k,kmer_map)
 query_counts = (query_counts - mean)/std
 query_counts = np.log2(query_counts + np.abs(np.min(query_counts))+1)
+print(query_counts)
+1/0
 
 Q = query_counts
 # querymap = dict(zip(range(len(queries)), list(queries.keys())))
