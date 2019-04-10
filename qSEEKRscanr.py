@@ -1,4 +1,3 @@
-from scipy.stats import percentileofscore
 import pandas as pd
 import numpy as np
 from seekr.fasta_reader import Reader
@@ -15,6 +14,21 @@ import multiprocessing
 # This version of the script parallelizes computation
 # And completely vectorizes the calculation of the correlation matrix
 '''
+###########################################################################
+
+###########################################################################
+def count_kmers(fa,k,k_map):
+    counts = []
+    for seq in fa:
+        currlen = len(seq)
+        vals = np.zeros(len(k_map))
+        for i in range(currlen-k+1):
+            if seq[i:i+k] in k_map:
+                vals[k_map[seq[i:i+k]]]+=1
+        vals = 1000*(vals/currlen)
+        counts.append(vals)
+    return np.array(counts)
+
 def rectCorr(queries_kmers,ref_kmers):
     queries_kmers = (queries_kmers.T - np.mean(queries_kmers, axis=1)).T
     ref_kmers = (ref_kmers.T - np.mean(ref_kmers, axis=1)).T
@@ -30,7 +44,7 @@ def rectCorr(queries_kmers,ref_kmers):
     return qSEEKRmat.T
 
 
-def qSEEKR(refs, k, Q, target, w, s):
+def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
     t_h, t_s = target
     window, slide = w, s
     hits = {}
@@ -39,10 +53,9 @@ def qSEEKR(refs, k, Q, target, w, s):
     if threeprime_hang != 0:
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
-    tile_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
-    tile_counter.seqs = tiles
-    tile_counter.get_counts()
-    tCounts = tile_counter.counts
+    tCounts = count_kmers(tiles,k,k_map)
+    tCounts = (tCounts - mean)/std
+    tCounts = np.log2(tCounts + np.abs(np.min(tCounts))+1)
 
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
@@ -55,7 +68,7 @@ def qSEEKR(refs, k, Q, target, w, s):
 ###########################################################################
 parser = argparse.ArgumentParser()
 parser.add_argument("-t")
-parser.add_argument('-k', type=int)
+parser.add_argument('-k', type=int,default=5)
 parser.add_argument('--thresh', type=int,
                     help='Percentile to select hits', default=99)
 parser.add_argument('-n', type=int, help='Number of processors,default = number cpus avail',
@@ -64,6 +77,10 @@ parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
 parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
+
+bases = ['A','T','C','G']
+kmers = [''.join(p) for p in product(bases,repeat=args.k)]
+kmer_map = dict(zip(kmers,range(0,4**args.k)))
 ###########################################################################
 
 ###########################################################################
@@ -72,16 +89,19 @@ query_path = './queries/queries.fa'
 target_path = args.t
 target_head, target_seq = Reader(
     target_path).get_headers(), Reader(target_path).get_seqs()
+target_dict = dict(zip(target_head, target_seq))
+
 queries = dict(zip(Reader(query_path).get_headers(),
                    Reader(query_path).get_seqs()))
 ###########################################################################
 
 ###########################################################################
-mean_paths = [f for f in glob.iglob('*mean.npy')]
+mean_paths = [f for f in glob.iglob('./stats/*mean.npy')]
+std_paths = [f for f in glob.iglob('./stats/*std.npy')]
+
 means = {}
 for mean_path in mean_paths:
     means[basename(mean_path)] = np.load(mean_path)
-std_paths = [f for f in glob.iglob('*std.npy')]
 
 stds = {}
 for std_path in std_paths:
@@ -91,49 +111,36 @@ std = stds[f'{args.k}std.npy']
 ###########################################################################
 
 ###########################################################################
-target_dict = dict(zip(target_head, target_seq))
-refs = {}
-ref_paths = [f for f in glob.iglob(f'./refs/*{args.k}_ref.npy')]
-for ref_path in ref_paths:
-    curr_npy = np.load(ref_path)
-    refs[basename(ref_path)] = curr_npy
-
-refs_keys = [f'>{i[:-10]}' for i in refs.keys()]
-refs_new = {}
-for i, k in enumerate(refs):
-    refs_new[refs_keys[i]] = refs[k]
+ref = np.load(f'./refs/{args.k}ref.npy')
 ###########################################################################
 
 ###########################################################################
 
-query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
-query_counter.seqs = list(queries.values())
-query_counter.get_counts()
-query_counts = query_counter.counts
+queryseqs = list(queries.values())
+query_counts = count_kmers(queryseqs,args.k,kmer_map)
+query_counts = (query_counts - mean)/std
+query_counts = np.log2(query_counts + np.abs(np.min(query_counts))+1)
 
-queries = dict(zip(queries.keys(), query_counts))
-Q = np.array([list(i) for i in queries.values()])
+Q = query_counts
+# querymap = dict(zip(range(len(queries)), list(queries.keys())))
 
-querymap = dict(zip(range(len(queries)), list(queries.keys())))
-
-query_percentile = {}
-for i in range(len(queries)):
-    percentile = np.percentile(refs_new[querymap[i]], args.thresh)
-    query_percentile[querymap[i]] = percentile
-
-q_arr = np.array(list(query_percentile.values()))
+# query_percentile = {}
+# for i in range(len(queries)):
+#     percentile = np.percentile(refs_new[querymap[i]], args.thresh)
+#     query_percentile[querymap[i]] = percentile
+#
+# q_arr = np.array(list(query_percentile.values()))
 #This performs standard SEEKR for the query
 
-refs_arr = np.array([list(i) for i in refs.values()])
-percentiles = np.percentile(refs_arr, args.thresh, axis=1)
+percentiles = np.percentile(ref, args.thresh, axis=0)
 ###########################################################################
 '''
-Parallelize transcript computations 
+Parallelize transcript computations
 '''
 ###########################################################################
 with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
-        *[[q_arr], [args.k], [Q], list(target_dict.items()), [args.w], [args.s]]))
+        *[[percentiles], [args.k], [Q], list(target_dict.items()), [args.w], [args.s],[mean],[std],[kmer_map]]))
     hits = dict(ha)
 pickle.dump(hits, open(f'{args.t[:-3]}_{args.k}_scores.p', 'wb'))
 #1/0
