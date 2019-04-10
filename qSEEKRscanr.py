@@ -43,16 +43,9 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
     if threeprime_hang != 0:
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
-<<<<<<< HEAD
-    tile_counter = BasicCounter(k=args.k, mean=mean,  std=std, silent=True)
-    tile_counter.seqs = tiles
-    tile_counter.get_counts()
-    tCounts = tile_counter.counts
-=======
     tCounts = BasicCounter(k=k,mean=mean,std=std,silent=True)
     tCounts.seqs = tiles
     tCounts.get_counts()
->>>>>>> test
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
     qSEEKRmat = rectCorr(Q,tCounts.counts)
@@ -92,19 +85,11 @@ queries = dict(zip(Reader(query_path).get_headers(),
 
 ###########################################################################
 mean_paths = [f for f in glob.iglob('./stats/*mean.npy')]
-<<<<<<< HEAD
-means = {}
-for mean_path in mean_paths:
-    means[basename(mean_path)] = np.load(mean_path)
-std_paths = [f for f in glob.iglob('./stats/*std.npy')]
-=======
 std_paths = [f for f in glob.iglob('./stats/*std.npy')]
 
 means = {}
 for mean_path in mean_paths:
     means[basename(mean_path)] = np.load(mean_path)
->>>>>>> test
-
 stds = {}
 for std_path in std_paths:
     stds[basename(std_path)] = np.load(std_path)
@@ -118,38 +103,9 @@ ref = np.load(f'./refs/{args.k}ref.npy')
 
 ###########################################################################
 
-<<<<<<< HEAD
-query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
-query_counter.seqs = list(queries.values())
-query_counter.get_counts()
-query_counts = query_counter.counts
-print(np.corrcoef(query_counts))
-1/0
-queries = dict(zip(queries.keys(), query_counts))
-Q = np.array([list(i) for i in queries.values()])
-
-querymap = dict(zip(range(len(queries)), list(queries.keys())))
-
-query_percentile = {}
-for i in range(len(queries)):
-    percentile = np.percentile(refs_new[querymap[i]], args.thresh)
-    query_percentile[querymap[i]] = percentile
-
-q_arr = np.array(list(query_percentile.values()))
-=======
 queries = BasicCounter(infasta='./queries/queries.fa',k=args.k,mean=mean,std=std,silent=True)
 queries.get_counts()
 Q = queries.counts
-# querymap = dict(zip(range(len(queries)), list(queries.keys())))
-
-# query_percentile = {}
-# for i in range(len(queries)):
-#     percentile = np.percentile(refs_new[querymap[i]], args.thresh)
-#     query_percentile[querymap[i]] = percentile
-#
-# q_arr = np.array(list(query_percentile.values()))
->>>>>>> test
-#This performs standard SEEKR for the query
 
 percentiles = np.percentile(ref, args.thresh, axis=0)
 ###########################################################################
@@ -161,9 +117,4 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[percentiles], [args.k], [Q], list(target_dict.items()), [args.w], [args.s],[mean],[std],[kmer_map]]))
     hits = dict(ha)
-<<<<<<< HEAD
 pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_scores.p', 'wb'))
-=======
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_scores_test.p', 'wb'))
->>>>>>> test
-#1/0
