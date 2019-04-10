@@ -43,7 +43,6 @@ def qSEEKR(refs, k, Q, target, w, s):
     tile_counter.seqs = tiles
     tile_counter.get_counts()
     tCounts = tile_counter.counts
-
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
     qSEEKRmat = rectCorr(Q,tCounts)
