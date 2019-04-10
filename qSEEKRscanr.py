@@ -51,7 +51,7 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
     qSEEKRmat = rectCorr(Q,tCounts.counts)
     hits_idx = np.argwhere(qSEEKRmat > refs)
     tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
-    return t_h, [qSEEKRmat, hits_idx, tot_scores]
+    return t_h, [hits_idx, tot_scores]
 ###########################################################################
 
 ###########################################################################
