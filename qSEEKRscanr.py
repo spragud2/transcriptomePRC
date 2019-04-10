@@ -39,7 +39,7 @@ def qSEEKR(refs, k, Q, target, w, s):
     if threeprime_hang != 0:
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
-    tile_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
+    tile_counter = BasicCounter(k=args.k, mean=mean,  std=std, silent=True,log2=False)
     tile_counter.seqs = tiles
     tile_counter.get_counts()
     tCounts = tile_counter.counts
@@ -106,7 +106,7 @@ for i, k in enumerate(refs):
 
 ###########################################################################
 
-query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
+query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True,log2=False)
 query_counter.seqs = list(queries.values())
 query_counter.get_counts()
 query_counts = query_counter.counts
@@ -135,5 +135,5 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[q_arr], [args.k], [Q], list(target_dict.items()), [args.w], [args.s]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'{args.t[:-3]}_{args.k}_scores.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_scores.p', 'wb'))
 #1/0
