@@ -77,11 +77,11 @@ queries = dict(zip(Reader(query_path).get_headers(),
 ###########################################################################
 
 ###########################################################################
-mean_paths = [f for f in glob.iglob('*mean.npy')]
+mean_paths = [f for f in glob.iglob('./stats/*mean.npy')]
 means = {}
 for mean_path in mean_paths:
     means[basename(mean_path)] = np.load(mean_path)
-std_paths = [f for f in glob.iglob('*std.npy')]
+std_paths = [f for f in glob.iglob('./stats/*std.npy')]
 
 stds = {}
 for std_path in std_paths:
@@ -128,7 +128,7 @@ refs_arr = np.array([list(i) for i in refs.values()])
 percentiles = np.percentile(refs_arr, args.thresh, axis=1)
 ###########################################################################
 '''
-Parallelize transcript computations 
+Parallelize transcript computations
 '''
 ###########################################################################
 with multiprocessing.Pool(args.n) as pool:
