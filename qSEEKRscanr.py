@@ -55,7 +55,7 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
 
     tCounts = count_kmers(tiles,k,k_map)
     tCounts = (tCounts - mean)/std
-    tCounts = np.log2(tCounts + np.abs(np.min(tCounts))+1)
+    #tCounts = np.log2(tCounts + np.abs(np.min(tCounts))+1)
 
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
@@ -119,7 +119,7 @@ ref = np.load(f'./refs/{args.k}ref.npy')
 queryseqs = list(queries.values())
 query_counts = count_kmers(queryseqs,args.k,kmer_map)
 query_counts = (query_counts - mean)/std
-query_counts = np.log2(query_counts + np.abs(np.min(query_counts))+1)
+#query_counts = np.log2(query_counts + np.abs(np.min(query_counts))+1)
 
 Q = query_counts
 # querymap = dict(zip(range(len(queries)), list(queries.keys())))
@@ -142,5 +142,5 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[percentiles], [args.k], [Q], list(target_dict.items()), [args.w], [args.s],[mean],[std],[kmer_map]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'{args.t[:-3]}_{args.k}_scores.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_scores_test.p', 'wb'))
 #1/0
