@@ -17,17 +17,7 @@ import multiprocessing
 ###########################################################################
 
 ###########################################################################
-def count_kmers(fa,k,k_map):
-    counts = []
-    for seq in fa:
-        currlen = len(seq)
-        vals = np.zeros(len(k_map))
-        for i in range(currlen-k+1):
-            if seq[i:i+k] in k_map:
-                vals[k_map[seq[i:i+k]]]+=1
-        vals = 1000*(vals/currlen)
-        counts.append(vals)
-    return np.array(counts)
+
 
 def rectCorr(queries_kmers,ref_kmers):
     queries_kmers = (queries_kmers.T - np.mean(queries_kmers, axis=1)).T
@@ -53,12 +43,12 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
     if threeprime_hang != 0:
        tiles[-1] = tiles[-1]+t_s[-threeprime_hang:]
 
-    tCounts = count_kmers(tiles,k,k_map)
-    tCounts = (tCounts - mean)/std
-    tCounts = np.log2(tCounts + np.abs(np.min(tCounts))+1)
+    tCounts = BasicCounter(k=k,mean=mean,std=std,silent=True)
+    tCounts.seqs = tiles
+    tCounts.get_counts()
     #Completely vectorized implementation of the old 'dSEEKR'
     #Convert row means in matrices to 0
-    qSEEKRmat = rectCorr(Q,tCounts)
+    qSEEKRmat = rectCorr(Q,tCounts.counts)
     hits_idx = np.argwhere(qSEEKRmat > refs)
     tot_scores = np.sum(qSEEKRmat > refs) / len(t_s)
     return t_h, [qSEEKRmat, hits_idx, tot_scores]
@@ -114,14 +104,9 @@ ref = np.load(f'./refs/{args.k}ref.npy')
 
 ###########################################################################
 
-queryseqs = list(queries.values())
-query_counts = count_kmers(queryseqs,args.k,kmer_map)
-query_counts = (query_counts - mean)/std
-query_counts = np.log2(query_counts + np.abs(np.min(query_counts))+1)
-print(query_counts)
-1/0
-
-Q = query_counts
+queries = BasicCounter(infasta='./queries/queries.fa',k=args.k,mean=mean,std=std,silent=True)
+queries.get_counts()
+Q = queries.counts
 # querymap = dict(zip(range(len(queries)), list(queries.keys())))
 
 # query_percentile = {}
