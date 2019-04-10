@@ -109,7 +109,8 @@ query_counter = BasicCounter(k=args.k, mean=mean, std=std, silent=True)
 query_counter.seqs = list(queries.values())
 query_counter.get_counts()
 query_counts = query_counter.counts
-
+print(np.corrcoef(query_counts))
+1/0
 queries = dict(zip(queries.keys(), query_counts))
 Q = np.array([list(i) for i in queries.values()])
 
