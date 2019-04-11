@@ -117,4 +117,4 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[percentiles], [args.k], [Q], list(target_dict.items()), [args.w], [args.s],[mean],[std],[kmer_map]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_scores.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_scores.p', 'wb'))
