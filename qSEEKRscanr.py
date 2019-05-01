@@ -10,6 +10,7 @@ from os.path import basename
 import pickle
 import argparse
 import multiprocessing
+from tqdm import tqdm
 '''
 # This version of the script parallelizes computation
 # And completely vectorizes the calculation of the correlation matrix
@@ -56,7 +57,7 @@ def qSEEKR(refs, k, Q, target, w, s,mean,std,k_map):
 
 ###########################################################################
 parser = argparse.ArgumentParser()
-parser.add_argument("-t")
+parser.add_argument("-t",type=str,help='Path to target fasta file')
 parser.add_argument('-k', type=int,default=5)
 parser.add_argument('--thresh', type=int,
                     help='Percentile to select hits', default=99)
