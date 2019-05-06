@@ -41,8 +41,11 @@ def classify(seq, k, lrTab):
     nucmap = { 'A':0, 'T':1, 'C':2, 'G':3 }
     rowmap = dict(zip([''.join(p) for p in product('ATCG',repeat=k-1)],range(4**(k-1))))
     for kmer in [seq[i:i+k] for i in range(len(seq)-k+1) ]:
-        i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
-        bits += lrTab[i, j]
+        if kmer in rowmap:
+            i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
+            bits += lrTab[i, j]
+        else:
+            continue
     return bits
 
 def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
