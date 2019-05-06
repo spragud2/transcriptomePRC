@@ -39,7 +39,7 @@ def classify(seq, k, lrTab):
     seq = seq.upper()
     bits = 0
     nucmap = { 'A':0, 'T':1, 'C':2, 'G':3 }
-    rowmap = dict(zip([''.join(p) for p in itertools.product(bases,repeat=k-1)],range(4**(k-1))))
+    rowmap = dict(zip([''.join(p) for p in product('ATCG',repeat=k-1)],range(4**(k-1))))
     for kmer in [seq[i:i+k] for i in range(len(seq)-k+1) ]:
         i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
         bits += lrTab[i, j]
@@ -54,7 +54,7 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
     bSeq = np.array([classify(tile,k,bTbl) for tile in tiles])
     ae4Seq = np.array([classify(tile,k,ae4Tbl) for tile in tiles])
     qSEEKRmat = np.column_stack((bSeq,ae4Seq))
-    hits_idx = np.argwhere(qSEEKRmat > 0,axis=0)
+    hits_idx = np.argwhere(qSEEKRmat > 0)
     tot_scores = np.sum(qSEEKRmat > 0,axis=0) / len(t_s)
     return t_h, [hits_idx, tot_scores]
 ###########################################################################
@@ -79,6 +79,11 @@ kmer_map = dict(zip(kmers,range(0,4**args.k)))
 ###########################################################################
 #Path to known functional domains
 
+target_path = args.t
+target_head, target_seq = Reader(
+    target_path).get_headers(), Reader(target_path).get_seqs()
+target_dict = dict(zip(target_head, target_seq))
+
 b_model = np.load('./bmodel_2mers.mkv.npy')
 ae4_model = np.load('./AE4model_2mers.mkv.npy')
 lncome_model = np.load('./genomemodel_2mers.mkv.npy')
@@ -96,5 +101,4 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s]]))
     hits = dict(ha)
-print(hits)
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_{args.w}win_{args.s}slide_scores.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_{args.w}win_{args.s}slide_scores_MARKOV.p', 'wb'))
