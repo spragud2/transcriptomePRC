@@ -39,13 +39,10 @@ def classify(seq, k, lrTab):
     seq = seq.upper()
     bits = 0
     nucmap = { 'A':0, 'T':1, 'C':2, 'G':3 }
-    rowmap = dict(zip([''.join(p) for p in product('ATCG',repeat=k-1)],range(4**(k-1))))
-    for kmer in [seq[i:i+k] for i in range(len(seq)-k+1) ]:
-        if kmer in rowmap:
-            i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
-            bits += lrTab[i, j]
-        else:
-            continue
+    rowmap = dict(zip([''.join(p) for p in product(['A','T','C','G'],repeat=k-1)],range(4**(k-1))))
+    for kmer in [seq[i:i+k] for i in range(len(seq)-k+1) if 'N' not in seq[i:i+k]]:
+        i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
+        bits += lrTab[i, j]
     return bits
 
 def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
@@ -76,8 +73,6 @@ parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
 args = parser.parse_args()
 
-kmers = [''.join(p) for p in product('AGTC',repeat=args.k)]
-kmer_map = dict(zip(kmers,range(0,4**args.k)))
 ###########################################################################
 
 ###########################################################################
