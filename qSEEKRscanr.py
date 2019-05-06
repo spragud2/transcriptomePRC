@@ -56,6 +56,7 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
     qSEEKRmat = np.column_stack((bSeq,ae4Seq))
     hits_idx = np.argwhere(qSEEKRmat > 0)
     tot_scores = np.sum(qSEEKRmat > 0,axis=0) / len(t_s)
+    tot_scores = np.sum(tot_scores)
     return t_h, [hits_idx, tot_scores]
 ###########################################################################
 
