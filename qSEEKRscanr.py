@@ -85,9 +85,9 @@ target_head, target_seq = Reader(
     target_path).get_headers(), Reader(target_path).get_seqs()
 target_dict = dict(zip(target_head, target_seq))
 
-b_model = np.load('./bmodel_2mers.mkv.npy')
-ae4_model = np.load('./AE4model_2mers.mkv.npy')
-lncome_model = np.load('./genomemodel_2mers.mkv.npy')
+b_model = np.load('./bmodel_4mers.mkv.npy')
+ae4_model = np.load('./AE4model_4mers.mkv.npy')
+lncome_model = np.load('./genomemodel_4mers.mkv.npy')
 ###########################################################################
 
 ###########################################################################
