@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "qSEEKRscanr.py", line 85, in <module>
+    target_path).get_headers(), Reader(target_path).get_seqs()
+  File "/nas/longleaf/home/dsprague/anaconda3/lib/python3.6/site-packages/seekr/fasta_reader.py", line 76, in get_headers
+    clean_data = self.get_lines()
+  File "/nas/longleaf/home/dsprague/anaconda3/lib/python3.6/site-packages/seekr/fasta_reader.py", line 66, in get_lines
+    self._read_data()
+  File "/nas/longleaf/home/dsprague/anaconda3/lib/python3.6/site-packages/seekr/fasta_reader.py", line 44, in _read_data
+    with open(self.infasta) as infasta:
+FileNotFoundError: [Errno 2] No such file or directory: '*.fa'
