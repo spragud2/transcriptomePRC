@@ -58,7 +58,8 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     hits_idx = np.argwhere(qSEEKRmat > thresh)
     tot_scores = np.sum(qSEEKRmat > thresh,axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
-    return t_h, [hits_idx, tot_scores]
+    negtot = (qSEEKRmat <= thresh).sum() / len(tiles)
+    return t_h, [hits_idx, tot_scores,negtot]
 ###########################################################################
 
 ###########################################################################
@@ -102,4 +103,4 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s],[args.thresh]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.w}win_{args.s}slide_{args.thresh}LRcutoff_MARKOV.p', 'wb'))
+pickle.dump(hits, open(f'./{basename(args.t)[:-3]}_{args.k}_{args.w}win_{args.s}slide_{args.thresh}LRcutoff_MARKOV.p', 'wb'))
