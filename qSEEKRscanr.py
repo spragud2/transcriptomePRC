@@ -58,8 +58,7 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     hits_idx = np.argwhere(qSEEKRmat > thresh)
     tot_scores = np.sum(qSEEKRmat > thresh,axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
-    negtot = (qSEEKRmat <= thresh).sum() / len(tiles)
-    return t_h, [hits_idx, tot_scores,negtot]
+    return t_h, [hits_idx, tot_scores,qSEEKRmat]
 ###########################################################################
 
 ###########################################################################
