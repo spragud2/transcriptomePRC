@@ -46,7 +46,7 @@ def classify(seq, k, lrTab):
             bits += lrTab[i, j]
     return bits
 
-def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
+def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     t_h, t_s = target
     window, slide = w, s
     hits = {}
@@ -55,8 +55,8 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
     bSeq = np.array([classify(tile,k,bTbl) for tile in tiles])
     ae4Seq = np.array([classify(tile,k,ae4Tbl) for tile in tiles])
     qSEEKRmat = np.column_stack((bSeq,ae4Seq))
-    hits_idx = np.argwhere(qSEEKRmat > 1)
-    tot_scores = np.sum(qSEEKRmat > 1,axis=0) / len(t_s)
+    hits_idx = np.argwhere(qSEEKRmat > thresh)
+    tot_scores = np.sum(qSEEKRmat > thresh,axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
     return t_h, [hits_idx, tot_scores]
 ###########################################################################
@@ -66,12 +66,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t",type=str,help='Path to target fasta file')
 parser.add_argument('-k', type=int,default=5)
 parser.add_argument('--thresh', type=int,
-                    help='Percentile to select hits', default=99)
+                    help='likelihood ratio threshold', default=0)
 parser.add_argument('-n', type=int, help='Number of processors,default = number cpus avail',
                     default=multiprocessing.cpu_count()-1)
 parser.add_argument('-w', type=int, help='Window for tile size', default=1000)
 parser.add_argument(
     '-s', type=int, help='How many bp to slide tiles', default=100)
+
 args = parser.parse_args()
 
 ###########################################################################
@@ -99,6 +100,6 @@ Parallelize transcript computations
 ###########################################################################
 with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
-        *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s]]))
+        *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s],[args.thresh]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_{args.w}win_{args.s}slide_scores_1thresh_MARKOV.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.w}win_{args.s}slide_{args.thresh}LRcutoff_MARKOV.p', 'wb'))
