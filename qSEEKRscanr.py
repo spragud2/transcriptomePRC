@@ -101,4 +101,4 @@ with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
         *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s]]))
     hits = dict(ha)
-pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_{args.w}win_{args.s}slide_scores_MARKOV.p', 'wb'))
+pickle.dump(hits, open(f'../{basename(args.t)[:-3]}_{args.k}_{args.thresh}_{args.w}win_{args.s}slide_scores_1thresh_MARKOV.p', 'wb'))
