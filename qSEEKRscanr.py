@@ -40,9 +40,10 @@ def classify(seq, k, lrTab):
     bits = 0
     nucmap = { 'A':0, 'T':1, 'C':2, 'G':3 }
     rowmap = dict(zip([''.join(p) for p in product(['A','T','C','G'],repeat=k-1)],range(4**(k-1))))
-    for kmer in [seq[i:i+k] for i in range(len(seq)-k+1) if 'N' not in seq[i:i+k]]:
-        i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
-        bits += lrTab[i, j]
+    for kmer in [seq[i:i+k] for i in range(len(seq)-k+1)]:
+        if 'N' not in kmer:
+            i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
+            bits += lrTab[i, j]
     return bits
 
 def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
@@ -54,8 +55,8 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s):
     bSeq = np.array([classify(tile,k,bTbl) for tile in tiles])
     ae4Seq = np.array([classify(tile,k,ae4Tbl) for tile in tiles])
     qSEEKRmat = np.column_stack((bSeq,ae4Seq))
-    hits_idx = np.argwhere(qSEEKRmat > 0)
-    tot_scores = np.sum(qSEEKRmat > 0,axis=0) / len(t_s)
+    hits_idx = np.argwhere(qSEEKRmat > 1)
+    tot_scores = np.sum(qSEEKRmat > 1,axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
     return t_h, [hits_idx, tot_scores]
 ###########################################################################
