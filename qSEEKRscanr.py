@@ -56,7 +56,7 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     ae4Seq = np.array([classify(tile,k,ae4Tbl) for tile in tiles])
     qSEEKRmat = np.column_stack((bSeq,ae4Seq))
     hits_idx = np.argwhere(qSEEKRmat > thresh)
-    tot_scores = np.sum(qSEEKRmat > thresh,axis=0) / len(t_s)
+    tot_scores = np.sum(qSEEKRmat[qSEEKRmat > thresh],axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
     return t_h, [hits_idx, tot_scores,qSEEKRmat]
 ###########################################################################
