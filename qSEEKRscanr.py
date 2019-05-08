@@ -45,7 +45,7 @@ def classify(seq, k, lrTab):
             i, j = rowmap[kmer[:k-1]], nucmap[kmer[-1]]
             bits += lrTab[i, j]
     return bits
-
+#
 def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     t_h, t_s = target
     window, slide = w, s
