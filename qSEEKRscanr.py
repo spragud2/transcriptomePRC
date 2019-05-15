@@ -58,7 +58,8 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     hits_idx = np.argwhere(qSEEKRmat > thresh)
     tot_scores = np.sum(qSEEKRmat[qSEEKRmat > thresh],axis=0) / len(t_s)
     tot_scores = np.sum(tot_scores)
-    return t_h, [hits_idx, tot_scores]
+    avg_score = np.sum(qSEEKRmat[qSEEKRmat>thresh])/np.sum(qSEEKRmat>thresh)
+    return t_h, [hits_idx, tot_scores,avg_score]
 ###########################################################################
 
 ###########################################################################
@@ -85,9 +86,9 @@ target_head, target_seq = Reader(
     target_path).get_headers(), Reader(target_path).get_seqs()
 target_dict = dict(zip(target_head, target_seq))
 
-b_model = np.load('./bmodel_4mers.mkv.npy')
-ae4_model = np.load('./AE4model_4mers.mkv.npy')
-lncome_model = np.load('./genomemodel_4mers.mkv.npy')
+b_model = np.load('./mamBCD4.mkv.npy')
+ae4_model = np.load('./mamAE4.mkv.npy')
+lncome_model = np.load('./genome4.mkv.npy')
 ###########################################################################
 
 ###########################################################################
