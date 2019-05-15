@@ -50,7 +50,7 @@ def qSEEKR(k,ae4Tbl,bTbl, target, w, s,thresh):
     t_h, t_s = target
     window, slide = w, s
     hits = {}
-    tiles = [t_s[i:i+window] for i in range(0, len(t_s), slide)]
+    tiles = [t_s[i:i+window] for i in range(0, len(t_s)-window+1, slide)]
 
     bSeq = np.array([classify(tile,k,bTbl) for tile in tiles])
     ae4Seq = np.array([classify(tile,k,ae4Tbl) for tile in tiles])
