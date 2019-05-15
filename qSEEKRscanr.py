@@ -85,14 +85,12 @@ target_head, target_seq = Reader(
     target_path).get_headers(), Reader(target_path).get_seqs()
 target_dict = dict(zip(target_head, target_seq))
 
-b_model = np.load('./mamBCD4.mkv.npy')
-ae4_model = np.load('./mamAE4.mkv.npy')
-lncome_model = np.load('./genome4.mkv.npy')
+BCD = np.load('./mamBCD4.mkv.npy')
+AE = np.load('./mamAE4.mkv.npy')
 ###########################################################################
 
 ###########################################################################
-bTbl = np.log2(b_model) - np.log2(lncome_model)
-ae4Tbl = np.log2(ae4_model) - np.log2(lncome_model)
+
 ###########################################################################
 '''
 Parallelize transcript computations
@@ -100,6 +98,6 @@ Parallelize transcript computations
 ###########################################################################
 with multiprocessing.Pool(args.n) as pool:
     ha = pool.starmap(qSEEKR, product(
-        *[[args.k], [ae4Tbl], [bTbl],list(target_dict.items()), [args.w], [args.s],[args.thresh]]))
+        *[[args.k], [AE], [BCD],list(target_dict.items()), [args.w], [args.s],[args.thresh]]))
     hits = dict(ha)
 pickle.dump(hits, open(f'./{basename(args.t)[:-3]}_{args.k}_{args.w}win_{args.s}slide_{args.thresh}LRcutoff_MARKOV.p', 'wb'))
